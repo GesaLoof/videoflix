@@ -5,6 +5,13 @@ db.sqlite3
 __pycache__/
 *.pyc
 *.pyo
+.venv/
 
 #sensitive data
 .env
+
+#videos
+media/*
+
+#static files
+staticfiles/
