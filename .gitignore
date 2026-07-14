@@ -15,3 +15,6 @@ media/*
 
 #static files
 staticfiles/
+
+#redis tmp files
+dump.rdb
