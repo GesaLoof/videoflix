@@ -14,7 +14,7 @@ class VideoListView(APIView):
 
     def get(self, request):
         videos = Video.objects.filter(hls_ready=True)
-        serializer = VideoSerializer(videos, many=True)
+        serializer = VideoSerializer(videos, many=True, context={'request': request})
         return Response(serializer.data)
 
 
