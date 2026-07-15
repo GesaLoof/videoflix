@@ -3,8 +3,8 @@ from django.contrib.auth import get_user_model
 from rest_framework_simplejwt import serializers as jwt_serializers
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 
-
 User = get_user_model()
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
@@ -16,7 +16,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if attrs["password"] != attrs["confirmed_password"]:
-            raise serializers.ValidationError({"confirmed_password": "Passwords do not match."})
+            raise serializers.ValidationError(
+                {"confirmed_password": "Passwords do not match."}
+            )
         return attrs
 
     def create(self, validated_data):
@@ -25,7 +27,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.is_active = False
         user.save()
         return user
-    
+
 
 class EmailTokenObtainPairSerializer(jwt_serializers.TokenObtainPairSerializer):
     username_field = User.USERNAME_FIELD  # "email"
@@ -36,7 +38,9 @@ class EmailTokenObtainPairSerializer(jwt_serializers.TokenObtainPairSerializer):
         except AuthenticationFailed:
             user = User.objects.filter(email=attrs.get("email")).first()
             if user and not user.is_active:
-                raise AuthenticationFailed("Account is not activated. Check your email.")
+                raise AuthenticationFailed(
+                    "Account is not activated. Check your email."
+                )
             raise
 
 
@@ -45,6 +49,8 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     confirm_password = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
-        if attrs['new_password'] != attrs['confirm_password']:
-            raise serializers.ValidationError({'confirm_password': 'Passwords do not match.'})
+        if attrs["new_password"] != attrs["confirm_password"]:
+            raise serializers.ValidationError(
+                {"confirm_password": "Passwords do not match."}
+            )
         return attrs
