@@ -33,21 +33,23 @@ videoflix/
 │   ├── urls.py
 │   └── wsgi.py
 ├── auth_app/               # authentication
+│   ├── api/
+│   │   ├── serializers.py
+│   │   ├── urls.py
+│   │   └── views.py
 │   ├── authentication.py   # cookie-based JWT authentication
 │   ├── models.py           # custom user model
-│   ├── serializers.py
-│   ├── tokens.py           # token generators for activation and password reset
-│   ├── urls.py
-│   └── views.py
+│   └── tokens.py           # token generators for activation and password reset
 ├── video_app/              # video streaming
+│   ├── api/
+│   │   ├── serializers.py
+│   │   ├── urls.py
+│   │   └── views.py
 │   ├── admin.py            # video upload via Django admin
 │   ├── models.py           # Video and Category models
-│   ├── serializers.py
 │   ├── signals.py          # triggers transcoding on video upload
 │   ├── tasks.py            # RQ background transcoding task
-│   ├── transcoder.py       # ffmpeg transcoding logic
-│   ├── urls.py
-│   └── views.py
+│   └── transcoder.py       # ffmpeg transcoding logic
 ├── backend.Dockerfile
 ├── backend.entrypoint.sh
 ├── docker-compose.yml
