@@ -14,7 +14,7 @@ class Video(models.Model):
     upload = models.FileField(upload_to='uploads/', null=True, blank=True)
     thumbnail = models.ImageField(upload_to='thumbnails/', null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
-    hls_ready = models.BooleanField(default=False)
+    hls_ready = models.BooleanField(default=False, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

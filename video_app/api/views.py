@@ -7,14 +7,20 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from video_app.models import Video
 from .serializers import VideoSerializer
+from django.core.cache import cache
 
 
 class VideoListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        videos = Video.objects.filter(hls_ready=True)
+        cached = cache.get('video_list')
+        if cached:
+            return Response(cached)
+
+        videos = Video.objects.filter(hls_ready=True).select_related('category')
         serializer = VideoSerializer(videos, many=True, context={'request': request})
+        cache.set('video_list', serializer.data, timeout=60*5)  # cache for 5 minutes
         return Response(serializer.data)
 
 
