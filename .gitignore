@@ -18,3 +18,7 @@ staticfiles/
 
 #redis tmp files
 dump.rdb
+
+#local os files
+.DS_Store
+**/.DS_Store
