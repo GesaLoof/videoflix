@@ -5,6 +5,8 @@ from .models import Video
 
 @django_rq.job
 def transcode_video(video_id, input_path):
+    """Transcode a video to HLS and update its processing status."""
+
     video = Video.objects.get(pk=video_id)
     try:
         transcode_to_hls(video_id, input_path)

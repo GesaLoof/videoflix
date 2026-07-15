@@ -25,13 +25,17 @@ User = get_user_model()
 
 
 class RegisterView(generics.CreateAPIView):
+    """Register a new user and send an activation email."""
+
     serializer_class = RegisterSerializer
 
     def perform_create(self, serializer):
+        """Create the user and trigger account activation."""
         user = serializer.save()
         self.send_activation_email(user)
 
     def send_activation_email(self, user):
+        """Send an account activation email."""
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = account_activation_token.make_token(user)
         activation_link = f"{settings.FRONTEND_URL}/activate/{uid}/{token}/"
@@ -44,10 +48,12 @@ class RegisterView(generics.CreateAPIView):
 
 
 class ActivateAccountView(APIView):
-    # ideally for safety this would be a post method,
-    # but I am using get because that is how the endpoint is documented in the assigment
-    # just change to def post to make it a post request
+    """Activate a user account from an email link."""
+
+    # Uses GET because it matches the assignment specification.
+    # Change to POST if the API contract changes (safer)
     def get(self, request, uidb64, token):
+        """Validate the activation token and activate the account."""
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
@@ -65,17 +71,22 @@ class ActivateAccountView(APIView):
 
 
 class EmailTokenObtainPairView(TokenObtainPairView):
+    """Return JWT access and refresh tokens."""
+
     serializer_class = EmailTokenObtainPairSerializer
 
 
 class CookieTokenObtainPairView(TokenObtainPairView):
+    """Authenticate a user and store JWTs in HTTP-only cookies."""
+
     serializer_class = EmailTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
+        """Log in the user and set authentication cookies."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = serializer.user  # simplejwt sets this during validate()
+        user = serializer.user
         access = serializer.validated_data["access"]
         refresh = serializer.validated_data["refresh"]
 
@@ -84,7 +95,7 @@ class CookieTokenObtainPairView(TokenObtainPairView):
                 "detail": "Login successful",
                 "user": {
                     "id": user.id,
-                    "username": user.email,  # see note below
+                    "username": user.email,
                 },
             }
         )
@@ -106,7 +117,10 @@ class CookieTokenObtainPairView(TokenObtainPairView):
 
 
 class CookieTokenRefreshView(TokenRefreshView):
+    """Refresh the access token using the refresh token cookie."""
+
     def post(self, request, *args, **kwargs):
+        """Issue a new access token."""
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
             return Response(
@@ -134,15 +148,18 @@ class CookieTokenRefreshView(TokenRefreshView):
 
 
 class LogoutView(APIView):
+    """Blacklist the refresh token and clear authentication cookies."""
+
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """Log out the current user."""
         refresh_token = request.COOKIES.get("refresh_token")
         if refresh_token:
             try:
                 RefreshToken(refresh_token).blacklist()
             except TokenError:
-                pass  # already invalid/expired
+                pass
         else:
             return Response(
                 {"error": "Refresh token not found in cookies"},
@@ -160,9 +177,12 @@ class LogoutView(APIView):
 
 
 class PasswordResetRequestView(APIView):
+    """Send a password reset email if the user exists."""
+
     permission_classes = [AllowAny]
 
     def post(self, request):
+        """Generate and email a password reset link."""
         email = request.data.get("email")
         if not email:
             return Response(
@@ -178,7 +198,7 @@ class PasswordResetRequestView(APIView):
             )
 
         uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = password_reset_token.make_token(user)  # ← custom generator
+        token = password_reset_token.make_token(user)
         reset_link = f"{settings.FRONTEND_URL}/password_confirm/{uid}/{token}/"
 
         send_mail(
@@ -192,9 +212,11 @@ class PasswordResetRequestView(APIView):
 
 
 class PasswordResetConfirmView(APIView):
+    """Reset a user's password using a valid reset token."""
     permission_classes = [AllowAny]
 
     def post(self, request, uidb64, token):
+        """Validate the reset token and update the password."""
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
@@ -203,7 +225,7 @@ class PasswordResetConfirmView(APIView):
                 {"error": "Invalid reset link."}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        if not password_reset_token.check_token(user, token):  # ← custom generator
+        if not password_reset_token.check_token(user, token):
             return Response(
                 {"error": "Reset link is invalid or has expired."},
                 status=status.HTTP_400_BAD_REQUEST,

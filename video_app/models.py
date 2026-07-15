@@ -2,6 +2,8 @@ from django.db import models
 
 
 class Category(models.Model):
+    """Video category."""
+
     name = models.CharField(max_length=100)
 
     def __str__(self):
@@ -9,6 +11,8 @@ class Category(models.Model):
 
 
 class Video(models.Model):
+    """Video uploaded for streaming."""
+    
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     # make both upload and thumbnail mandatory in production, but optional for testing

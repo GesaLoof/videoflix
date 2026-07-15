@@ -4,10 +4,11 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.db import models
-import uuid
 
 
 class UserManager(BaseUserManager):
+    """Manager for the custom user model."""
+
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Users must have an email address")
@@ -27,6 +28,7 @@ class UserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
+    """Custom user model using email as the login identifier."""
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, unique=False, blank=True)
     is_active = models.BooleanField(default=False)

@@ -2,6 +2,7 @@ import subprocess
 import os
 from django.conf import settings
 
+# Output profiles used for HLS transcoding
 RESOLUTIONS = {
     "480p": {"size": "854x480", "bitrate": "800k"},
     "720p": {"size": "1280x720", "bitrate": "2800k"},
@@ -10,6 +11,8 @@ RESOLUTIONS = {
 
 
 def transcode_to_hls(video_id, input_path):
+    """Generate HLS playlists and segments for all configured resolutions."""
+
     for resolution, params in RESOLUTIONS.items():
         output_dir = os.path.join(settings.HLS_ROOT, str(video_id), resolution)
         os.makedirs(output_dir, exist_ok=True)
