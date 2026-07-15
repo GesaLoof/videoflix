@@ -28,7 +28,7 @@ class PlaylistView(APIView):
         except Video.DoesNotExist:
             return Response({'error': 'Video not found or not ready.'}, status=status.HTTP_404_NOT_FOUND)
 
-        if resolution not in ['360p', '720p', '1080p']:
+        if resolution not in ['480p', '720p', '1080p']:
             return Response({'error': 'Invalid resolution.'}, status=status.HTTP_400_BAD_REQUEST)
 
         playlist_path = os.path.join(settings.HLS_ROOT, str(movie_id), resolution, 'index.m3u8')
@@ -46,7 +46,7 @@ class SegmentView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution, segment):
-        if resolution not in ['360p', '720p', '1080p']:
+        if resolution not in ['480p', '720p', '1080p']:
             return Response({'error': 'Invalid resolution.'}, status=status.HTTP_400_BAD_REQUEST)
         if not segment.endswith('.ts') or '/' in segment or '..' in segment:
             return Response({'error': 'Invalid segment.'}, status=status.HTTP_400_BAD_REQUEST)

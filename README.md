@@ -20,7 +20,7 @@ A Django-based video streaming platform with JWT authentication and HLS video st
 - JWT authentication via httpOnly cookies
 - Password reset via email
 - Video streaming via HLS (HTTP Live Streaming)
-- Admin panel for video uploads with automatic transcoding to 360p, 720p, and 1080p
+- Admin panel for video uploads with automatic transcoding to 480p, 720p, and 1080p
 
 ---
 
@@ -169,7 +169,7 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 | GET | `/api/video/<id>/<resolution>/index.m3u8` | Get HLS playlist for a video | Yes |
 | GET | `/api/video/<id>/<resolution>/<segment>/` | Get HLS video segment | Yes |
 
-Available resolutions: `360p`, `720p`, `1080p`
+Available resolutions: `480p`, `720p`, `1080p`
 
 ---
 

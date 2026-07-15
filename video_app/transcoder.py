@@ -3,7 +3,7 @@ import os
 from django.conf import settings
 
 RESOLUTIONS = {
-    '360p':  {'size': '640x360',   'bitrate': '800k'},
+    '480p':  {'size': '854x480',   'bitrate': '800k'},
     '720p':  {'size': '1280x720',  'bitrate': '2800k'},
     '1080p': {'size': '1920x1080', 'bitrate': '5000k'},
 }
