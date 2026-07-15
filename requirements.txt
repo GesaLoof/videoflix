@@ -2,6 +2,7 @@ asgiref==3.11.1
 click==8.4.2
 croniter==6.2.3
 Django==6.0.6
+django-cors-headers==4.9.0
 django-redis==7.0.0
 django-restframework==0.0.1
 django-rq==4.1.1

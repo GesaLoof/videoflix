@@ -42,12 +42,14 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'django_rq',
-    'video_app.apps.VideoAppConfig'
+    'video_app.apps.VideoAppConfig',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -184,3 +186,9 @@ AUTH_COOKIE_SAMESITE = "Lax"
 
 
 HLS_ROOT = os.path.join(BASE_DIR, 'media', 'hls')
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+]
+CORS_ALLOW_CREDENTIALS = True
