@@ -39,10 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'auth_app',
-    'video_app',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-    'django_rq'
+    'django_rq',
+    'video_app.apps.VideoAppConfig'
 ]
 
 MIDDLEWARE = [
