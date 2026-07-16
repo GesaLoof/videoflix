@@ -22,3 +22,6 @@ dump.rdb
 #local os files
 .DS_Store
 **/.DS_Store
+
+#migrations
+**/migrations/0*
