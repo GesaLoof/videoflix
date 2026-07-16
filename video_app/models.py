@@ -12,11 +12,11 @@ class Category(models.Model):
 
 class Video(models.Model):
     """Video uploaded for streaming."""
-    
+
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     # make both upload and thumbnail mandatory in production, but optional for testing
-    upload = models.FileField(upload_to="uploads/", null=True, blank=True)
+    upload = models.FileField(upload_to="uploads/", null=False)
     thumbnail = models.ImageField(upload_to="thumbnails/", null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     hls_ready = models.BooleanField(default=False, db_index=True)
