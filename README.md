@@ -192,7 +192,7 @@ When an admin uploads a video:
 1. The raw file is saved to `/app/media/uploads/`
 2. A background RQ job is queued via Redis
 3. ffmpeg transcodes the video to HLS format at three resolutions
-4. HLS segments are saved to `/app/media/hls/<video_id>/<resolution>/`
+4. HLS segments are saved to `/app/media/hls/<movie_id>/<resolution>/`
 5. The video's `hls_ready` flag is set to `True`
 6. The video becomes available via the streaming endpoints
 
