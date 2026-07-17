@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 40px 20px; font-family: Arial, sans-serif; color: #333; background-color: #ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto;">
+    
+    <!-- Logo -->
+    <tr>
+      <td align="center" style="padding-bottom: 30px;">
+        <span style="font-size: 32px; font-weight: bold; color: #5200ff;">
+          &#9658; VIDEOFLIX
+        </span>
+      </td>
+    </tr>
+
+    <!-- Body -->
+    <tr>
+      <td>
+        <p style="margin: 0 0 10px 0;">
+          Dear <span style="color: #5200ff;">{{ user.email }},</span>
+        </p>
+        <p style="margin: 0 0 24px 0;">
+          Thank you for registering with 
+          <span style="color: #5200ff;">Videoflix</span>. 
+          To complete your registration and verify your email address, please click the link below:
+        </p>
+
+        <!-- Button -->
+        <a href="{{ activation_link }}" 
+           style="display: inline-block; background-color: #2b3ef0; color: #ffffff; 
+                  text-decoration: none; padding: 14px 28px; border-radius: 30px; 
+                  font-weight: bold; font-size: 16px; margin-bottom: 24px;">
+          Activate account
+        </a>
+
+        <p style="margin: 24px 0 0 0; color: #333;">
+          If you did not create an account with us, please disregard this email.
+        </p>
+        <p style="margin: 16px 0 0 0;">Best regards,</p>
+        <p style="margin: 8px 0 0 0;">Your Videoflix Team.</p>
+      </td>
+    </tr>
+
+  </table>
+</body>
+</html>

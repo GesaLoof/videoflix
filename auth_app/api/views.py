@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 
@@ -20,31 +19,21 @@ from .serializers import (
     EmailTokenObtainPairSerializer,
     PasswordResetConfirmSerializer,
 )
+from auth_app.emails import send_activation_email, send_password_reset_email
 
 User = get_user_model()
 
 
 class RegisterView(generics.CreateAPIView):
     """Register a new user and send an activation email."""
-
     serializer_class = RegisterSerializer
 
     def perform_create(self, serializer):
         """Create the user and trigger account activation."""
         user = serializer.save()
-        self.send_activation_email(user)
-
-    def send_activation_email(self, user):
-        """Send an account activation email."""
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = account_activation_token.make_token(user)
-        activation_link = f"{settings.FRONTEND_URL}/activate/{uid}/{token}/"
-        send_mail(
-            subject="Activate your account",
-            message=f"Click to activate your account: {activation_link}",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-        )
+        send_activation_email(user, uid, token)
 
 
 class ActivateAccountView(APIView):
@@ -178,7 +167,6 @@ class LogoutView(APIView):
 
 class PasswordResetRequestView(APIView):
     """Send a password reset email if the user exists."""
-
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -199,16 +187,10 @@ class PasswordResetRequestView(APIView):
 
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = password_reset_token.make_token(user)
-        reset_link = f"{settings.FRONTEND_URL}/password_confirm/{uid}/{token}/"
-
-        send_mail(
-            subject="Reset your password",
-            message=f"Click the link to reset your password: {reset_link}",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-        )
+        send_password_reset_email(user, uid, token)
 
         return Response({"detail": "If that email exists, a reset link has been sent."})
+
 
 
 class PasswordResetConfirmView(APIView):
