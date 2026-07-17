@@ -8,7 +8,7 @@ from rest_framework import status
 from video_app.models import Video
 from .serializers import VideoSerializer
 from django.core.cache import cache
-
+from video_app.helpers import get_video_or_404, is_valid_resolution, get_playlist_path, read_playlist, get_segment_path, is_valid_segment
 
 class VideoListView(APIView):
     """Return all HLS-ready videos, cached in Redis for 5 minutes."""
@@ -28,8 +28,7 @@ class VideoListView(APIView):
 
 
 class PlaylistView(APIView):
-    """Serve an HLS playlist for a video and resolution."""
-
+    """Serves the HLS playlist file for a specific video and resolution."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution):
@@ -38,38 +37,31 @@ class PlaylistView(APIView):
         then serve the .m3u8 playlist file with the correct content type
         so HLS players can parse it correctly.
         """
-        try:
-            video = Video.objects.get(pk=movie_id, hls_ready=True)
-        except Video.DoesNotExist:
+        if not get_video_or_404(movie_id):
             return Response(
                 {"error": "Video not found or not ready."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        if resolution not in ["480p", "720p", "1080p"]:
+        if not is_valid_resolution(resolution):
             return Response(
                 {"error": "Invalid resolution."}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        playlist_path = os.path.join(
-            settings.HLS_ROOT, str(movie_id), resolution, "index.m3u8"
-        )
+        playlist_path = get_playlist_path(movie_id, resolution)
+        content = read_playlist(playlist_path)
 
-        if not os.path.exists(playlist_path):
+        if content is None:
             return Response(
                 {"error": f"Playlist not found at {playlist_path}."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        with open(playlist_path, "r") as f:
-            content = f.read()
-
         return HttpResponse(content, content_type="application/vnd.apple.mpegurl")
 
 
 class SegmentView(APIView):
-    """Serve individual HLS video segments."""
-
+    """Serves individual HLS video segments."""
     permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution, segment):
@@ -77,22 +69,13 @@ class SegmentView(APIView):
         Validate the resolution and segment name to prevent path traversal attacks,
         then serve the .ts segment file as a binary stream.
         """
-        if resolution not in ["480p", "720p", "1080p"]:
-            return Response(
-                {"error": "Invalid resolution."}, status=status.HTTP_400_BAD_REQUEST
-            )
-        if not segment.endswith(".ts") or "/" in segment or ".." in segment:
-            return Response(
-                {"error": "Invalid segment."}, status=status.HTTP_400_BAD_REQUEST
-            )
+        if not is_valid_resolution(resolution):
+            return Response({"error": "Invalid resolution."}, status=status.HTTP_400_BAD_REQUEST)
+        if not is_valid_segment(segment):
+            return Response({"error": "Invalid segment."}, status=status.HTTP_400_BAD_REQUEST)
 
-        segment_path = os.path.join(
-            settings.HLS_ROOT, str(movie_id), resolution, segment
-        )
-
+        segment_path = get_segment_path(movie_id, resolution, segment)
         if not os.path.exists(segment_path):
-            return Response(
-                {"error": "Segment not found."}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "Segment not found."}, status=status.HTTP_404_NOT_FOUND)
 
         return FileResponse(open(segment_path, "rb"), content_type="video/MP2T")
