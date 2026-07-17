@@ -10,11 +10,15 @@ RESOLUTIONS = {
 }
 
 
-def transcode_to_hls(video_id, input_path):
-    """Generate HLS playlists and segments for all configured resolutions."""
+def transcode_to_hls(movie_id, input_path):
+    """
+    Run ffmpeg for each resolution in RESOLUTIONS, producing 10-second .ts segments
+    and an index.m3u8 playlist per resolution under HLS_ROOT/<movie_id>/<resolution>/.
+    Uses libx264 for video and aac for audio. Raises CalledProcessError if ffmpeg fails.
+    """
 
     for resolution, params in RESOLUTIONS.items():
-        output_dir = os.path.join(settings.HLS_ROOT, str(video_id), resolution)
+        output_dir = os.path.join(settings.HLS_ROOT, str(movie_id), resolution)
         os.makedirs(output_dir, exist_ok=True)
 
         subprocess.run(
