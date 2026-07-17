@@ -73,9 +73,9 @@ videoflix/
     cd videoflix
     ```
 
-2. Create a `.env` file based on `.env.example`:
+2. Create a `.env` file based on `.env.template`:
     ```bash
-    cp .env.example .env
+    cp .env.template .env
     ```
 
 3. Fill in the required values in `.env` (see Configuration section below).
@@ -105,7 +105,7 @@ docker-compose down -v     # stop containers and wipe all data (database + media
 
 ## Configuration
 
-Copy `.env.example` to `.env` and fill in the values:
+Copy `.env.template` to `.env` and fill in the values:
 
 ```env
 # Django
