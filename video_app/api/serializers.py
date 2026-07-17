@@ -20,6 +20,11 @@ class VideoSerializer(serializers.ModelSerializer):
         ]
 
     def get_thumbnail_url(self, obj):
+        """
+        Build an absolute thumbnail URL using the request context, so the response
+        contains a complete URL rather than a relative path. Returns None if no
+        thumbnail is set or no request is available in the context.
+        """
         request = self.context.get("request")
         if obj.thumbnail and request:
             return request.build_absolute_uri(obj.thumbnail.url)

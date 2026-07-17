@@ -25,11 +25,15 @@ User = get_user_model()
 
 
 class RegisterView(generics.CreateAPIView):
-    """Register a new user and send an activation email."""
+    """
+    Extends CreateAPIView to add activation email sending after user creation.
+    The default perform_create() only calls serializer.save(), this override
+    adds uid/token generation and triggers the activation email.
+    """
     serializer_class = RegisterSerializer
 
     def perform_create(self, serializer):
-        """Create the user and trigger account activation."""
+        """Save the user, then generate uid and token and send the activation email."""
         user = serializer.save()
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = account_activation_token.make_token(user)
@@ -37,12 +41,14 @@ class RegisterView(generics.CreateAPIView):
 
 
 class ActivateAccountView(APIView):
-    """Activate a user account from an email link."""
-
-    # Uses GET because it matches the assignment specification.
-    # Change to POST if the API contract changes (safer)
+    """
+    Validates the activation token and sets is_active=True.
+    The token becomes invalid after activation because is_active is hashed
+    into the token, flipping it to True invalidates any further use.
+    Uses GET since the link is clicked directly from an email client.
+    """
     def get(self, request, uidb64, token):
-        """Validate the activation token and activate the account."""
+        """Decode the uid, validate the token, and activate the account."""
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
@@ -60,18 +66,24 @@ class ActivateAccountView(APIView):
 
 
 class EmailTokenObtainPairView(TokenObtainPairView):
-    """Return JWT access and refresh tokens."""
-
+    """
+    Extends TokenObtainPairView to authenticate via email instead of username,
+    matching our custom user model where USERNAME_FIELD = 'email'.
+    Returns tokens in the response body.
+    """
     serializer_class = EmailTokenObtainPairSerializer
 
 
 class CookieTokenObtainPairView(TokenObtainPairView):
-    """Authenticate a user and store JWTs in HTTP-only cookies."""
-
+    """
+    Extends TokenObtainPairView to store JWTs in httpOnly cookies instead of
+    the response body, preventing JavaScript from accessing them directly (XSS protection).
+    Also authenticates via email using EmailTokenObtainPairSerializer.
+    """
     serializer_class = EmailTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
-        """Log in the user and set authentication cookies."""
+        """Authenticate the user and set access_token and refresh_token as httpOnly cookies."""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -106,10 +118,14 @@ class CookieTokenObtainPairView(TokenObtainPairView):
 
 
 class CookieTokenRefreshView(TokenRefreshView):
-    """Refresh the access token using the refresh token cookie."""
+    """
+    Extends TokenRefreshView to read the refresh token from a cookie instead
+    of the request body, since httpOnly cookies cannot be read by JavaScript.
+    Issues a new access_token cookie on success.
+    """
 
     def post(self, request, *args, **kwargs):
-        """Issue a new access token."""
+        """Read the refresh token cookie, validate it, and set a new access_token cookie."""
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
             return Response(
@@ -137,12 +153,16 @@ class CookieTokenRefreshView(TokenRefreshView):
 
 
 class LogoutView(APIView):
-    """Blacklist the refresh token and clear authentication cookies."""
+    """
+    Blacklists the refresh token and clears auth cookies.
+    Uses AllowAny so users can log out even after the access token has expired —
+    requiring IsAuthenticated would block logout in that case.
+    """
 
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Log out the current user."""
+        """Log out the current user. Blacklist the refresh token and delete both auth cookies."""
         refresh_token = request.COOKIES.get("refresh_token")
         if refresh_token:
             try:
@@ -166,11 +186,15 @@ class LogoutView(APIView):
 
 
 class PasswordResetRequestView(APIView):
-    """Send a password reset email if the user exists."""
+    """
+    Generates a password reset token and emails a reset link.
+    Returns the same response whether the email exists or not
+    to prevent user enumeration.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Generate and email a password reset link."""
+        """Look up user by email and send a password reset link if found."""
         email = request.data.get("email")
         if not email:
             return Response(
@@ -194,11 +218,15 @@ class PasswordResetRequestView(APIView):
 
 
 class PasswordResetConfirmView(APIView):
-    """Reset a user's password using a valid reset token."""
+    """
+    Validates the reset token and updates the password.
+    The token automatically invalidates after use because the user's
+    password hash is included in the token, changing it voids the token.
+    """
     permission_classes = [AllowAny]
 
     def post(self, request, uidb64, token):
-        """Validate the reset token and update the password."""
+        """Decode the uid, validate the token, and set the new password."""
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)

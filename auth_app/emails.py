@@ -3,6 +3,11 @@ from django.template.loader import render_to_string
 from django.conf import settings
 
 def send_activation_email(user, uid, token):
+    """
+    Build an activation link with uid and token as query parameters, render
+    the HTML email template and send it as a multipart email with a plain
+    text fallback for clients that do not support HTML.
+    """
     activation_link = f"{settings.FRONTEND_URL}/pages/auth/activate.html?uid={uid}&token={token}"
     
     context = {
@@ -24,6 +29,11 @@ def send_activation_email(user, uid, token):
 
 
 def send_password_reset_email(user, uid, token):
+    """
+    Build a password reset link with uid and token as query parameters, render
+    the HTML email template and send it as a multipart email with a plain
+    text fallback for clients that do not support HTML.
+    """
     reset_link = f"{settings.FRONTEND_URL}/pages/auth/confirm_password.html?uid={uid}&token={token}"
     
     context = {

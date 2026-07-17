@@ -11,7 +11,7 @@ from django.core.cache import cache
 
 
 class VideoListView(APIView):
-    """Return all HLS-ready videos."""
+    """Return all HLS-ready videos, cached in Redis for 5 minutes."""
 
     permission_classes = [IsAuthenticated]
 
@@ -33,7 +33,11 @@ class PlaylistView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution):
-        """Return the requested HLS playlist (.m3u8)."""
+        """
+        Verify the video exists and is ready, validate the resolution,
+        then serve the .m3u8 playlist file with the correct content type
+        so HLS players can parse it correctly.
+        """
         try:
             video = Video.objects.get(pk=movie_id, hls_ready=True)
         except Video.DoesNotExist:
@@ -64,12 +68,15 @@ class PlaylistView(APIView):
 
 
 class SegmentView(APIView):
-    """Serve HLS video segments."""
-    
+    """Serve individual HLS video segments."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, movie_id, resolution, segment):
-        """Return the requested HLS segment (.ts)."""
+        """
+        Validate the resolution and segment name to prevent path traversal attacks,
+        then serve the .ts segment file as a binary stream.
+        """
         if resolution not in ["480p", "720p", "1080p"]:
             return Response(
                 {"error": "Invalid resolution."}, status=status.HTTP_400_BAD_REQUEST
