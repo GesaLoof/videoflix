@@ -65,14 +65,6 @@ class ActivateAccountView(APIView):
         )
 
 
-class EmailTokenObtainPairView(TokenObtainPairView):
-    """
-    Extends TokenObtainPairView to authenticate via email instead of username,
-    matching our custom user model where USERNAME_FIELD = 'email'.
-    Returns tokens in the response body.
-    """
-    serializer_class = EmailTokenObtainPairSerializer
-
 
 class CookieTokenObtainPairView(TokenObtainPairView):
     """
