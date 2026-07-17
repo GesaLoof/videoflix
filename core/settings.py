@@ -175,9 +175,6 @@ SIMPLE_JWT = {
 
 FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5500')
 
-#print emails to console during development
-#EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
 EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
 EMAIL_HOST = config('EMAIL_HOST', default='')
 EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
