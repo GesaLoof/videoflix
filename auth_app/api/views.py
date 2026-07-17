@@ -125,7 +125,10 @@ class CookieTokenRefreshView(TokenRefreshView):
     """
 
     def post(self, request, *args, **kwargs):
-        """Read the refresh token cookie, validate it, and set a new access_token cookie."""
+        """
+        Read the refresh token cookie, validate it, and set a new access_token cookie. 
+        Get new refresh token if previeus refresh token is rotated.
+        """
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
             return Response(
@@ -141,6 +144,8 @@ class CookieTokenRefreshView(TokenRefreshView):
             return Response({"error": str(e)}, status=status.HTTP_401_UNAUTHORIZED)
 
         access_token = serializer.validated_data.get("access")
+        new_refresh_token = serializer.validated_data.get("refresh")  #get new refresh token
+
         response = Response({"message": "Token refreshed successfully"})
         response.set_cookie(
             key="access_token",
@@ -149,6 +154,14 @@ class CookieTokenRefreshView(TokenRefreshView):
             secure=True,
             samesite="Lax",
         )
+        if new_refresh_token:  #set new refresh token cookie
+            response.set_cookie(
+                key="refresh_token",
+                value=str(new_refresh_token),
+                httponly=True,
+                secure=True,
+                samesite="Lax",
+            )
         return response
 
 
